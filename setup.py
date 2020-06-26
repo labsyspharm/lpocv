@@ -19,7 +19,7 @@ AUTHOR = 'Maulik Nariya'
 AUTHOR_EMAIL = 'mauliknariya@gmail.com'
 URL = 'http://github.com/mauliknariya/lpocv'
 PACKAGES = find_packages()
-INSTALL_REQUIRES = ['numpy', 'scikit_learn', 'itertools']
+INSTALL_REQUIRES = ['numpy', 'scikit_learn']
 CLASSIFIERS = ['Development Status :: 3 - Alpha', 
                 'Intended Audience :: Science/Research',
                 'License :: OSI Approved :: MIT License',
