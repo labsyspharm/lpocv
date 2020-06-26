@@ -5,7 +5,7 @@ def main():
     setup(name='lpocv',
           version=versioneer.get_version(),
           description= 'Leave-pair-out cross-validation',
-          long_descriptioni=(
+          long_description=(
             'Python module that implements leave-pair-out',
             'cross-validation for regression problems.',
             'Allows the user to include errors on the regression labels and'
@@ -20,12 +20,13 @@ def main():
           keywords=['leave-pair-out', 'cross-validation', 
                     'batch effects', 'bioinformatics'],
           classifiers=[
-            'Development Status :: 1 - Alpha',
+            'Development Status :: 3 - Alpha',
             'Intended Audience :: Science/Research',
-            'License :: OSI approved :: MIT License',
+            'License :: OSI Approved :: MIT License',
             'Operating System :: OS Independent',
             'Programming Language :: Python :: 3',
-            'Topic :: Scientific/Engineering :: Bio-Informatics']
+            'Topic :: Scientific/Engineering :: Bio-Informatics'
+            ]
          
          )
 if __name__=='__main__':
