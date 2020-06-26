@@ -35,6 +35,9 @@ class LeavePairOut:
         orderN: bool, default=False
             if True then randomly pick O(N) test pairs, if match_groups is True then 
             the random pairs have the same group labels
+        random_state: float, default=None
+            if specified the function returns the same randomly picked O(N) test
+            pairs, redundant when orderN=False.
         Returns:
         --------
         train and test indices
