@@ -2,6 +2,7 @@ import numpy as np
 from numpy.random import choice, randint, RandomState
 from sklearn.utils.validation import indexable, _num_samples
 from itertools import combinations
+import warnings
 
 class LeavePairOut:
     '''
@@ -24,9 +25,9 @@ class LeavePairOut:
         match_window: float, default=np.inf
             the allowed window for matching the groups (when groups variable is 
             continuous)  
-        orderN: bool, default=False
-            if True then randomly picks O(N) test pairs that satisfy rankable and 
-            group matching conditions
+        num_pairs: int, default=None
+            when specified each sample gets paired with num_pairs (<n_samples) samples provided 
+            they satisfy rankable and group matching conditions
         closest_match: bool, default=False
             if True then pairs those test samples for which groups variable is closest
         random_state: int, default None
@@ -38,17 +39,17 @@ class LeavePairOut:
     train and test indices
         '''
     def split(self, X, y, erry=10e-4, groups=None, match_window=np.inf, 
-              orderN=False, closest_match=False, random_state=None):
+              num_pairs=None, closest_match=False, random_state=None):
 
         X, y, groups = indexable(X, y, groups)
         num_samples = _num_samples(X)
         if num_samples<2: 
             raise ValueError ('Number of samples must be greater than or equal to 2.') 
         return self.generate_train_test(X, y, erry, groups, match_window,
-                                orderN, closest_match, random_state)
+                                num_pairs, closest_match, random_state)
 
     def generate_train_test(self, X, y, erry, groups, match_window, 
-                    orderN, closest_match, random_state):
+                    num_pairs, closest_match, random_state):
         num_samples = _num_samples(X)
         indices = np.arange(num_samples)
 
@@ -156,27 +157,39 @@ class LeavePairOut:
         if groups is None:
             groups = np.zeros(num_samples, dtype=int)
         
-        
-        # O(N^2) pairs
-        if orderN is False and closest_match is False:
+        assert num_pairs is None or num_pairs<num_samples, "'num_pairs' should be less than 'n_samples'"
+            
+            
+        # All possible pairs ~ N**2 pairs
+        if num_pairs is None and closest_match is False:
             for i, j in combinations(range(num_samples), 2):
                 if rankable_match(i, j):
                     yield train_test_indices(i, j)
                 else:
                     continue
-        # O(N) pairs
+        # num_pairs
         else:
+            paired = np.zeros(shape=(num_samples, num_samples), dtype='bool')
             for i in indices:
                 if closest_match is False:
                     if random_state is None:
                         r = RandomState(randint(2**32-1))
                     else:
                         r = RandomState(random_state+i)
-                    try:
-                        j = r.choice([k for k in indices if rankable_match(i, k)])
-                        yield train_test_indices(i, j)
-                    except ValueError:
-                        pass
+                    #try:
+                    rankable_list = [k for k in indices if rankable_match(i, k)]
+                    if len(rankable_list)<num_pairs:
+                        warnings.warn('Asked for %s pairs,  %s-th sample has %s rankable pairs.'% \
+                                        (num_pairs, i, len(rankable_list)), UserWarning)
+                    for l in range(num_pairs):
+                        if len(rankable_list)>0:
+                            j = r.choice(rankable_list)
+                            if paired[i, j]==False and paired[j, i]==False:
+                                yield train_test_indices(i, j)
+                                paired[i, j] = paired[j, i] = True
+                                #rankable_list.remove(j)
+                    #except ValueError:
+                        #pass
                 else:
                     try:
                         j = closest_rankable_match(i)
