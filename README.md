@@ -1,4 +1,3 @@
-#lpocv: Leave-pair-out cross validation
 # LPOCV: Leave-pair-out cross validation
 A Python module that implements leave-pair-out cross-validation to obtain a more accurate estimate of model performance in machine learning classification and regression problems. It does so by allowing the user to match the samples by a confounding batch variable and including errors on the labels (for regression problems).
 
