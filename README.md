@@ -9,38 +9,18 @@ Use the package manager `pip` to  install the `lpocv`
 pip install lpocv
 ```
 ### Usage
-<ol>
-  <li> <img source="https://render.githubusercontent.com/render/math?math={\mathcal{O}(N)}">  pairs:
-  The number of cross-validations using leave-pair-out method is <img src="https://render.githubusercontent.com/render/math?math={^{N}C_{2} = \frac{N(N-1)}{2} = \mathcal{O}(N^2)}">, for large <em>N</em> this can become computationally expensive. In such cases <code>orderN=True</code> can be used so that every sample gets <em>randomly</em> paired with exactly one other sample giving <img src="https://render.githubusercontent.com/render/math?math=\mathcal{O}(N)"> pairs.
-  </li>
-<pre><code>from sklearn.datasets import make_classification, make_regression
+The `lpocv` module is compatible with machine learning algorithms in `scikit-learn`. Once can call the `split()` function of `LeavePairOut` (analogous to `split()` for `KFold`, `ShuffleSplit`, etc.) as follows:
+
+<pre><code>
 from lpocv.lpocv import LeavePairOut
-X, y = make_classification(n_samples=20)
-for train, test in LeavePairOut().split(X, y, orderN=True):
-  print (y[test])
+for train, test in LeavePairOut().split(X,y):
+	BLOCK OF CODE FOR TRAINING
+	AND EVALUATION OF THE PREDICTOR
 </code></pre>
+where`X` is the data matrix of shape  `(n_samples, n_features)` and `y` is an array consisting of the class labels (integers or strings) or regression labels (floats) of shape `(n_samples)`.
 
-  <li> Error in labels:
-  In regression problems the error on the prediction labels is often known and should be taken in to consideration when choosing test pairs. The test pairs whose prediction labels are within the error limit should not be included when evaluating the model performance. LPOCV allows to specify a variable  <code>erry</code> which includes only those test pairs for which  <code>|y[i]-y[j]| > max(erry[i],erry[j])</code>. The parameter <code>erry</code> can be a single value which represents the error in all the labels or can be specified in array-like fashion.
-  </li>
-<pre><code>from numpy.random import uniform
-X, y = make_regression(n_samples=20)
-erry = uniform(0, 0.5*max(y), len(y))
-for train, test in LeavePairOut().split(X, y, erry, num_pairs=1):
-  print (y[test], erry[test])
-</code></pre>
+For categorical labels, only the pairs from opposing or dissimilar classes, <code>y[i]!=y[j]</code>, are allowed as test pairs. For regression problems, one should specify `erry` so that only those test pairs for which  <code>|y[i]-y[j]| > max(erry[i],erry[j])</code> are allowed. `erry` can be a an array or singleton. By default `erry=10e-4`, please change this if the difference in the prediction labels is smaller than this value.
 
-  <li> Batch effects:
-  In many cases prediction labels are confounded by known batch effects, LPOCV allows for a more accurate model evaluation by including only those test pairs for which the samples belong to the same batch. The value of the batch parameter is specified using the variable <code>groups</code>, the boolean <code>match_groups</code> should be set  <code>True</code>.
-  <h6>Note:</h6><code>groups</code> can be of type string or float, if <code>groups</code> is float then a <code>match_window</code> should be specified, if <code>|groups[i]-groups[j]| < match_window</code> then the samples <code>i</code> and <code>j</code> are considered to belong to the same batch.
-  </li>
+The information about the known confounder can be supplied through the `groups` variable. `groups` can be categorical  or continuous and should be an array of shape `(n_samples)`. For categorical confounders only those pairs for which the `groups` is identical are allowed as test pairs. For continuous confounders one ought to specify a `match_window` for allowed pairs, or set `closest_match=True`  to select pairs with the lowest difference in their confounders.
 
-<pre><code>from numpy.random import randint
-X, y = make_classification(n_samples=20)
-groups = randint(0, 2, len(y))
-for train, test in LeavePairOut().split(X, y,
-                                  groups=groups, match_groups=True,
-                                  num_pair=1):
-  print(y[test], groups[test])
-</code></pre>
-<ol>
+Leave-pair-out method provides with flexibility in the combinatorial complexity of the cross-validation folds. This can be specified through `num_pairs`. Setting `num_pairs=1` ensures that every sample gets paired with exactly one other allowed sample, giving us linear cross-validatory complexity with  <img src="https://render.githubusercontent.com/render/math?math=\mathcal{O}(n)">  test pairs. With `num_pairs=n`, we each sample gets paired with all other allowed samples giving quadratic complexity with <img src="https://render.githubusercontent.com/render/math?math=\mathcal{O}(n^2)">  test pairs.  In general, `num_pairs` can be any integer `1<=num_pairs<=n`.
