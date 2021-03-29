@@ -9,7 +9,7 @@ Use the package manager `pip` to  install the `lpocv`
 pip install lpocv
 ```
 ### Usage
-The `lpocv` module is compatible with machine learning algorithms in `scikit-learn`. Once can call the `split()` function of `LeavePairOut` (analogous to `split()` for `KFold`, `ShuffleSplit`, etc.) as follows:
+The `lpocv` module is compatible with machine learning algorithms in `scikit-learn`. One can call the `split()` function of `LeavePairOut` (analogous to `split()` for `KFold`, `ShuffleSplit`, etc.) as follows:
 
 <pre><code>
 from lpocv.lpocv import LeavePairOut
